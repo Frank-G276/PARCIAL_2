@@ -1,0 +1,90 @@
+--CREACION DE BASE DE DATOS Y TAMBIEN ALGUNOS DATOS DE PRUEBA()
+-- Primero eliminar todas las tablas en orden correcto
+DROP TABLE IF EXISTS parcial.asignaturas;
+DROP TABLE IF EXISTS parcial.user_role;
+DROP TABLE IF EXISTS parcial.users;
+DROP TABLE IF EXISTS parcial.roles;
+
+-- Crear schema
+CREATE SCHEMA IF NOT EXISTS parcial;
+
+-- Crear tabla de roles con el tipo correcto
+CREATE TABLE parcial.roles (
+    rolename VARCHAR(255) PRIMARY KEY
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Crear tabla de usuarios
+CREATE TABLE parcial.users (
+    user_id INT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    enabled BOOLEAN DEFAULT TRUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Crear tabla de relación usuario-rol
+CREATE TABLE parcial.user_role (
+    user_id INT,
+    rolename VARCHAR(255),
+    PRIMARY KEY (user_id, rolename),
+    CONSTRAINT fk_user_role_user 
+        FOREIGN KEY (user_id) REFERENCES parcial.users(user_id) 
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_user_role_role 
+        FOREIGN KEY (rolename) REFERENCES parcial.roles(rolename) 
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Crear tabla de asignaturas
+CREATE TABLE parcial.asignaturas (
+    asignatura_id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(30) NOT NULL,
+    descripcion VARCHAR(100),
+    salon INT NOT NULL,
+    hora_inicio TIME NOT NULL,
+    hora_fin TIME NOT NULL,
+    docente_id INT,
+    CONSTRAINT fk_asignatura_docente
+        FOREIGN KEY (docente_id) REFERENCES parcial.users(user_id) 
+        ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Insertar roles
+INSERT INTO parcial.roles (rolename) VALUES
+    ('ADMIN'),
+    ('DOCENTE'),
+    ('ESTUDIANTE'),
+    ('RECTOR');
+
+-- Insertar usuarios
+INSERT INTO parcial.users (user_id, username, password, enabled) VALUES
+    (666, 'JOSE', '$2y$10$CpmcU5IKAsBv6Qw53MQiHeaCXl5y0G3oP.iNUS3D28TMt6Ci7fsFW', 1),
+    (789, 'PEPE', '$2y$10$DlyLvqqRN/tEmJ6isEuKn.wJA2n6bnJr7wj/3fdIjPbxFjgaKyC..', 1),
+    (1076, 'FRANK', '$2y$10$HFxdKTGpdJe1Lzvorfle0OjqqxmqFTtIW1/HHMasiPP3WPsCtyGAa', 1),
+    (89999, 'PEDRO', '$2y$10$JUenran2MIrrw27hlT7M7.CPcr3qgv5KwIWx1TVv0GuOb10haaMK6', 1);
+
+-- Asignar roles a usuarios
+INSERT INTO parcial.user_role (user_id, rolename) VALUES
+    (789, 'DOCENTE'),
+    (89999, 'DOCENTE'),
+    (666, 'ESTUDIANTE'),
+    (1076, 'RECTOR');
+
+-- Insertar asignaturas
+INSERT INTO parcial.asignaturas 
+(nombre, descripcion, salon, hora_inicio, hora_fin, docente_id) VALUES
+    ('MATEMATICAS', 'CLASE DE MATEMATICAS', 102, '09:30:00', '12:00:00', 89999),
+    ('SOCIALES', 'SOCIOCIENCIA', 503, '08:45:00', '21:45:00', 789),
+    ('RELIGION(SATAN)', 'EH AVE MARIA', 203, '12:00:00', '13:00:00', 789),
+    ('CIENCIAS', 'CIENCIAS INGLESAS', 605, '03:30:00', '17:00:00', 789),
+    ('EDUCACION', 'EDUCANDO ANDO', 302, '17:00:00', '17:00:00', 89999),
+    ('ARTISTICA Y ARTES', 'CLASES ARTISTICAS Y BONITAS', 602, '05:05:00', '17:05:00', 789);
+
+-- Crear índices
+CREATE INDEX idx_user_username ON parcial.users(username);
+CREATE INDEX idx_asignatura_docente ON parcial.asignaturas(docente_id);
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+
+http://localhost:8080/swagger-ui.html
+http://localhost:8080/api-docs
